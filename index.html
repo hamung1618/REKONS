@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Rekap Penjualan &amp; Laporan Uang Masuk</title>
+<script>(function(){try{var t=localStorage.getItem('reko-theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');else if(t==='light')document.documentElement.removeAttribute('data-theme');else if(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();</script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/dexie@3.2.4/dist/dexie.min.js"></script>
 <style>
@@ -56,9 +57,10 @@ body{background:#f4f7fb;color:#172033;font-family:Arial,Helvetica,sans-serif}
 #tab-penjualan .badge-batal{display:inline-block;background:#dc2626;color:#fff;font-size:9px;padding:1px 5px;border-radius:4px;font-weight:800;letter-spacing:.06em;margin-right:5px;text-decoration:none;vertical-align:middle}
 #tab-penjualan tr.faktur-row{cursor:pointer}
 #tab-penjualan tr.faktur-row:hover td{background:#e8f2ff}
+#tab-penjualan #result{overflow:visible;position:relative}
 #tab-penjualan .tabs{display:flex;gap:5px;margin:4px 0 14px;flex-wrap:wrap;align-items:center;
   padding:7px 10px;background:#ffffff;border:1px solid #e2e8f0;border-radius:10px;
-  box-shadow:0 1px 3px rgba(31,78,120,.05);overflow:visible;position:relative}
+  box-shadow:0 1px 3px rgba(31,78,120,.05);overflow:visible;width:100%;box-sizing:border-box}
 #tab-penjualan .tabs button{background:transparent;color:#1f4e78;border:1px solid #cbd5e1;
   padding:6px 13px;font-size:12px;font-weight:600;border-radius:7px;
   letter-spacing:.01em;transition:background .15s,border-color .15s,color .15s,box-shadow .15s;cursor:pointer}
@@ -82,13 +84,13 @@ body{background:#f4f7fb;color:#172033;font-family:Arial,Helvetica,sans-serif}
 #tab-penjualan .filter-actions button{padding:7px 10px;font-size:12px;cursor:pointer;border-radius:6px;border:1px solid #cbd5e1}
 #tab-penjualan .filter-reset{background:#fff;color:#334155}
 #tab-penjualan .filter-info{font-size:11px;color:#64748b;margin-top:8px;line-height:1.35}
-#tab-penjualan .dd{position:relative;z-index:50}
-#tab-penjualan .dd.open{z-index:2000}
+#tab-penjualan .dd{position:relative;z-index:50;margin-left:auto}
+#tab-penjualan .dd.open{z-index:3000}
 #tab-penjualan .dd-toggle{display:flex;align-items:center;gap:5px;background:#fff;color:#1f4e78;border:0;border-radius:6px;padding:4px 10px;font-weight:bold;font-size:12px;cursor:pointer;box-shadow:0 1px 4px #0002}
 #tab-penjualan .dd-toggle:hover{background:#f0f4fa}
 #tab-penjualan .dd-toggle .chev{font-size:11px;transition:transform .2s}
 #tab-penjualan .dd.open .dd-toggle .chev{transform:rotate(180deg)}
-#tab-penjualan .dd-menu{display:none;position:absolute;right:0;top:calc(100% + 8px);min-width:320px;max-width:min(420px,94vw);background:#fff;color:#172033;border-radius:10px;box-shadow:0 8px 28px #0003;padding:16px;z-index:2000}
+#tab-penjualan .dd-menu{display:none;position:absolute;right:0;left:auto;top:calc(100% + 8px);min-width:320px;width:min(380px,92vw);max-width:min(420px,94vw);background:#fff;color:#172033;border-radius:10px;box-shadow:0 8px 28px #0003;padding:16px;z-index:3000;box-sizing:border-box}
 #tab-penjualan .dd.open .dd-menu{display:block}
 #tab-penjualan .dd-menu .file-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
 #tab-penjualan .dd-menu input[type=file]{font-size:13px;max-width:100%}
@@ -454,6 +456,46 @@ body{background:#f4f7fb;color:#172033;font-family:Arial,Helvetica,sans-serif}
 #tab-rekonsiliasi.active{display:block;}
 #rekonFrame{display:block;width:100%;height:calc(100vh - 38px);min-height:720px;border:0;background:#fff;}
 
+
+/* ===== Theme toggle + dark mode ===== */
+.main-tabbar .theme-toggle{margin-left:auto;appearance:none;border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.12);color:#e8eef6;width:28px;height:24px;border-radius:6px;cursor:pointer;font-size:13px;display:inline-flex;align-items:center;justify-content:center}
+.main-tabbar .theme-toggle:hover{background:rgba(255,255,255,.22)}
+html[data-theme="dark"]{color-scheme:dark}
+html[data-theme="dark"] body{background:#0f1724;color:#e2e8f0}
+html[data-theme="dark"] .main-tabbar{background:#0a1a2e}
+html[data-theme="dark"] .main-tab{border-color:rgba(255,255,255,.22);background:rgba(255,255,255,.06);color:#c5d4e8}
+html[data-theme="dark"] .main-tab.active{background:#1e3a5f;color:#e8f0fa;border-color:#3b6fa0}
+html[data-theme="dark"] #tab-penjualan{background:#0f1724;color:#e2e8f0}
+html[data-theme="dark"] #tab-penjualan .kpi{background:linear-gradient(145deg,#1a2535,#152033);box-shadow:0 0 0 1px rgba(91,155,213,.18)}
+html[data-theme="dark"] #tab-penjualan .kpi small{color:#94a3b8}
+html[data-theme="dark"] #tab-penjualan .kpi b{color:#e2e8f0}
+html[data-theme="dark"] #tab-penjualan .tabs{background:#152033;border-color:#2a3f55}
+html[data-theme="dark"] #tab-penjualan .tabs button,.tab-btn{color:#94c0e8;border-color:#3a5068}
+html[data-theme="dark"] #tab-penjualan .tabs button.active{background:#1f4e78;color:#fff}
+html[data-theme="dark"] #tab-penjualan .dd-toggle,.filter-btn,.col-picker-btn{background:#1a2535;color:#c5d4e8;border-color:#3a5068}
+html[data-theme="dark"] #tab-penjualan .fbar{background:#152033;border-color:#2a3f55}
+html[data-theme="dark"] #tab-penjualan .fbar input,.fbar select{background:#1a2535;color:#e2e8f0;border-color:#3a5068}
+html[data-theme="dark"] #tab-penjualan th{background:#1a3350;border-color:#2a3f55}
+html[data-theme="dark"] #tab-penjualan td{background:#152033;border-color:#2a3f55;color:#e2e8f0}
+html[data-theme="dark"] #tab-penjualan tr:hover td{background:#1e3a5f}
+html[data-theme="dark"] #tab-penjualan .dd-menu,.filter-menu,.col-picker-menu{background:#1a2535;color:#e2e8f0;border:1px solid #2a3f55}
+html[data-theme="dark"] #tab-penjualan .menu-title{color:#93c5fd;border-bottom-color:#2a3f55}
+html[data-theme="dark"] #tab-penjualan .menu-section{border-bottom-color:#2a3f55}
+html[data-theme="dark"] #tab-penjualan .menu-section select,html[data-theme="dark"] #tab-penjualan .menu-section input{background:#0f1724;color:#e2e8f0;border-color:#3a5068}
+html[data-theme="dark"] #tab-uangmasuk{--bg:#0f1724;--card:#1a2535;--ink:#e2e8f0;--muted:#94a3b8;--line:#2a3f55;--primary:#5b9bd5;--primary2:#3b6fa0;background:var(--bg);color:var(--ink)}
+html[data-theme="dark"] #tab-uangmasuk .app-header{background:#1a3350}
+html[data-theme="dark"] #tab-uangmasuk .kpi{background:var(--card);border-color:var(--line)}
+html[data-theme="dark"] #tab-uangmasuk .kpi .value{color:#93c5fd}
+html[data-theme="dark"] #tab-uangmasuk .tab{background:#1e2a3a;color:#94a3b8}
+html[data-theme="dark"] #tab-uangmasuk .tab.active{background:#1f4e78;color:#fff}
+html[data-theme="dark"] #tab-uangmasuk select,.search,.action,.dropbtn{background:#1a2535;color:#e2e8f0;border-color:#3a5068}
+html[data-theme="dark"] #tab-uangmasuk .table-card{background:var(--card);border-color:var(--line)}
+html[data-theme="dark"] #tab-uangmasuk th{background:#1a3350;color:#e8f0fa}
+html[data-theme="dark"] #tab-uangmasuk td{background:#152033;border-bottom-color:#2a3f55;color:#e2e8f0}
+html[data-theme="dark"] #tab-uangmasuk tr:hover td{background:#1e3a5f}
+html[data-theme="dark"] #tab-uangmasuk tr.total-row td{background:#1a2a1a;color:#c8e6c8}
+html[data-theme="dark"] #tab-rekonsiliasi,#rekonFrame{background:#0f1724}
+
 </style>
 </head>
 <body>
@@ -461,6 +503,7 @@ body{background:#f4f7fb;color:#172033;font-family:Arial,Helvetica,sans-serif}
 <button type="button" class="main-tab active" data-target="tab-penjualan">📊 Penjualan</button>
 <button type="button" class="main-tab" data-target="tab-uangmasuk">💰 Uang Masuk</button>
 <button type="button" class="main-tab" data-target="tab-rekonsiliasi">🔎 Rekonsiliasi</button>
+<button type="button" class="theme-toggle" id="globalThemeBtn" title="Mode gelap / terang">🌙</button>
 </div>
 <div id="tab-penjualan" class="main-panel active">
 
@@ -2632,5 +2675,22 @@ try { window.toggleDropdown = toggleDropdown; } catch(e){}
 })();
 </script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495" integrity="sha512-iIg7k2xntmwu6/uSb5tpc/hySgZc4eoL31yB29W6tJFo2akwjPWcEqnCEdJvGexCL0KEQwVYv5BlowfhVz26hg==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
+
+<script>
+(function(){
+  function isDark(){return document.documentElement.getAttribute('data-theme')==='dark';}
+  function setIcon(b,d){if(!b)return;b.textContent=d?'☀️':'🌙';}
+  function applyGlobalTheme(dark,fromIframe){
+    dark=!!dark;
+    if(isDark()!==dark){if(dark)document.documentElement.setAttribute('data-theme','dark');else document.documentElement.removeAttribute('data-theme');try{localStorage.setItem('reko-theme',dark?'dark':'light');}catch(e){}}
+    setIcon(document.getElementById('globalThemeBtn'),dark);
+    if(!fromIframe){try{var f=document.getElementById('rekonFrame');if(f&&f.contentWindow)f.contentWindow.postMessage({type:'REKON_SET_THEME',dark:dark},'*');}catch(e){}}
+  }
+  function init(){var b=document.getElementById('globalThemeBtn');if(!b)return;setIcon(b,isDark());b.onclick=function(){applyGlobalTheme(!isDark());};}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+  window.addEventListener('message',function(ev){if(ev&&ev.data&&ev.data.type==='REKON_THEME_CHANGED')applyGlobalTheme(!!ev.data.dark,true);});
+})();
+</script>
+
 </body>
 </html>
