@@ -620,7 +620,7 @@ body{background:#f4f7fb;color:#172033;font-family:Arial,Helvetica,sans-serif}
     <div class="dropdown" style="margin-left:auto">
       <button onclick="toggleDropdown()" class="dropbtn">☰ MENU AKSI</button>
       <div id="myDropdown" class="dropdown-content">
-        <label class="file-btn">📂 Pilih File Excel<input id="fileInput" type="file" accept=".xlsx,.xls"></label>
+        <label class="file-btn">📂 Pilih File Excel<input id="fileInput" type="file" accept=".xlsx,.xls" style="display:none"></label>
         <button class="action" id="exportBtn">⬇️ Save All (Excel)</button>
         
         <div style="padding: 10px 16px; border-top: 1px solid var(--line); background: #fafafa;">
@@ -1295,8 +1295,24 @@ async function deleteMonthData(){
     if (!count) return alert('Tidak ada data pada bulan tersebut.');
     if (!confirm('Hapus ' + count.toLocaleString('id-ID') + ' baris pada ' + monthLabel(m) + '?')) return;
     await db.tx.where('bulan').equals(m).delete();
-    await db.meta.put({key:'months', value:(await db.meta.get('months')).value.filter(x => x !== m)});
+    const remaining = ((await db.meta.get('months'))?.value || []).filter(x => x !== m);
+    await db.meta.put({key:'months', value: remaining});
+    // Ensure current table view is reset; persisted filter pointing to deleted
+    // month would otherwise leave an empty grid. Re-run population, then point
+    // the view at a month that still exists (or to "all months").
+    filters = filters || {};
+    if (filters.month === m) filters.month = '';
+    if (filters.month && !remaining.includes(filters.month)) filters.month = '';
+    document.getElementById('pjDeleteMonth').value = '';
     await refreshAfterDataChange();
+    // Re-apply persisted selection now that month options are repopulated.
+    try {
+      const fm = document.getElementById('filterMonth');
+      if (fm) {
+        const exists = Array.from(fm.options).some(o => o.value === (filters.month || ''));
+        fm.value = exists ? (filters.month || '') : '';
+      }
+    } catch(_){}
     setStatus('Data bulan ' + monthLabel(m) + ' berhasil dihapus: ' + count.toLocaleString('id-ID') + ' baris.');
     closeDd();
     return;
@@ -2019,6 +2035,26 @@ async function restoreFromDB(){
     const sales    = ((await db.meta.get('sales'))    || {}).value || [];
     const months   = ((await db.meta.get('months'))   || {}).value || [];
     populateFiltersFromMeta({products, sales, months});
+    // Apply persisted selection back into the dropdowns AFTER they were populated.
+    try {
+      const setIfPresent = (id, val) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const opts = Array.from(el.options || []);
+        const exists = opts.some(o => String(o.value) === String(val));
+        el.value = exists ? String(val) : '';
+      };
+      setIfPresent('filterMonth',   filters?.month   ?? '');
+      setIfPresent('filterSales',   filters?.sales   ?? '');
+      setIfPresent('filterProduct', filters?.product ?? '');
+      setIfPresent('filterPayment', filters?.payment ?? '');
+      const dm = document.getElementById('pjDeleteMonth');
+      if (dm && filters?.month) {
+        const exists = Array.from(dm.options).some(o => o.value === filters.month);
+        if (exists) dm.value = filters.month;
+      }
+    } catch(_){}
+    updateFilterUi();
     document.getElementById('summary').style.display = 'block';
     document.getElementById('result').style.display   = 'block';
     document.getElementById('save').disabled          = false;
@@ -2210,9 +2246,15 @@ function populateSalesFilter() {
     select.innerHTML = '<option value="">Semua Sales</option>';
     [...salesSet].sort().forEach(s => { select.innerHTML += `<option value="${s}">${s}</option>`; });
 }
-function populateDateFilter() {
-    const dateSet = new Set(state.daily.map(x => x.Tanggal));
+function populateDateFilter(rows) {
+    // Accept the filtered rows directly so the date list updates from the
+    // *currently visible* bulan, not from a stale `state.daily` computed under
+    // the previous (possibly "Semua Bulan") view.
+    const src = Array.isArray(rows) ? rows : (state.daily.map ? state.daily : []);
+    const dateSet = new Set(src.map(x => x && x.Tanggal).filter(Boolean));
     const select = document.getElementById('harianFilterTanggal');
+    if (!select) return;
+    const currentSel = '';
     select.innerHTML = '<option value="">Semua Tanggal</option>';
     [...dateSet].sort().forEach(tgl => { select.innerHTML += `<option value="${tgl}">${tgl}</option>`; });
 }
@@ -2474,7 +2516,7 @@ document.getElementById('filterBulanDetail').onchange = () => { updateKpi(); ren
 document.getElementById('detailJenis').onchange=renderDetail;
 document.getElementById('detailKategori').onchange=renderDetail;
 document.getElementById('detailSales').onchange=renderDetail;
-document.getElementById('filterBulanHarian').onchange = () => { renderHarian(); populateDateFilter(); };
+document.getElementById('filterBulanHarian').onchange = () => { populateDateFilter(getFilteredRowsByMonth(document.getElementById('filterBulanHarian').value)); renderHarian(); };
 document.getElementById('harianFilterTanggal').onchange=renderHarian;
 document.getElementById('filterBulanBulanan').onchange = renderBulanan;
 document.getElementById('filterBulanRekap').onchange = renderRekap;
